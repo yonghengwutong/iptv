@@ -1,0 +1,36 @@
+name: Build IPTV Playlist
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # 每 6 小时运行一次
+  workflow_dispatch:         # 可手动运行
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install requests
+        run: pip install requests
+
+      - name: Run merge script
+        run: python merge.py
+
+      - name: Prepare for GitHub Pages
+        run: |
+          mkdir -p public
+          cp playlist.m3u public/
+          echo "<h1>IPTV Playlist</h1>" > public/index.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
